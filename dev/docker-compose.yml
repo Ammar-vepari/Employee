@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  server:
+    image: empsvc:debug
+    container_name: employee-service.server
+    build:
+      context: ./..
+      target: debug
+      dockerfile: ./dev/Dockerfile
+    ports:
+      - "9080:9080"
+      - "40000:40000"
+    env_file: .env
+    volumes:
+      - ./..:/go/src/github.com/services/employee/
+    depends_on:
+      - postgres
+  
+
+  postgres:
+    image: local/postgres:dev
+    build:
+      context: ./../devops/local/postgres
+    ports:
+      - "5432:5432"
+    env_file: .env
+    environment:
+      POSTGRES_DB: $DB_NAME
+      POSTGRES_USER: $DB_MASTER_USER
+      POSTGRES_PASSWORD: $DB_MASTER_PASS
+    volumes:
+      - ./../sql:/mnt/artifacts
+      - ./../devops/local/postgres/init.sh:/docker-entrypoint-initdb.d/init.sh
+
+  liquibase:
+    image: local/liquibase:dev
+    build:
+      context: ./../devops/local/liquibase
+    env_file: .env
+    depends_on:
+      - postgres
+    volumes:
+      - ./../sql:/mnt/artifacts
+      - ./../devops/local/liquibase/init-scripts/:/dbtool/scripts/
+

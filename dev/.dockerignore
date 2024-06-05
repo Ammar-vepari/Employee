@@ -1,0 +1,6 @@
+./../api
+./../vscode
+docker-compose.*
+./../.gitignore
+*.md
+Dockerfile.*
